@@ -1,0 +1,113 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>PredFormer</title>
+<link href="./PredFormer_files/style.css" rel="stylesheet">
+<script type="text/javascript" src="./PredFormer_files/jquery.mlens-1.0.min.js"></script> 
+<script type="text/javascript" src="./PredFormer_files/jquery.js"></script>
+</head>
+
+<body>
+<div class="content">
+  <h1><strong>Video Prediction Transformers without Recurrence or Convolution</strong></h1>
+  <p id="authors">
+    <span>
+      <a href="https://yyyujintang.github.io/">Yujin Tang<sup>1,2</sup></a> &nbsp;&nbsp;
+      <a href="https://luqi.info/">Lu Qi<sup>2</sup></a> &nbsp;&nbsp;
+      <a href="https://phiphiphi31.github.io/">Fei Xie<sup>1</sup></a> &nbsp;&nbsp;
+      <a href="https://lxtgh.github.io/">Xiangtai Li<sup>3</sup></a> &nbsp;&nbsp;
+      <a href="https://vision.sjtu.edu.cn/">Chao Ma<sup>1</sup></a> &nbsp;&nbsp;
+      <a href="https://faculty.ucmerced.edu/mhyang/">Ming-Hsuan Yang<sup>2</sup></a>
+    </span>
+    <br><br>
+    <!-- <span style="font-size: 24px">
+      Google Research -->
+    </span>
+    <br>
+    <span>
+      <sup>1</sup>Shanghai Jiaotong University &nbsp;&nbsp; 
+      <sup>2</sup>UC Merced &nbsp;&nbsp; 
+      <sup>3</sup>Nanyang Technological University
+    <!-- </span>
+    <br>
+    <span>
+      <em>Corresponding author</em> -->
+    </span>
+  </p>
+
+  <!-- <p id="authors"><span><a href="https://yyyujintang.github.io/"></a></span><a href="https://yyyujintang.github.io/">Yujin Tang</a	> <a href="https://luqi.info/">Lu Qi</a> <a href="https://phiphiphi31.github.io/">Fei Xie</a> <a href="https://lxtgh.github.io/">Xiangtai Li</a> <a href="https://vision.sjtu.edu.cn/">Chao Ma</a> <a href="https://faculty.ucmerced.edu/mhyang/">Ming-Hsuan Yang</a><br>
+    <br>
+  <span style="font-size: 24px">Google Research
+  </span></p> -->
+  <br>
+  <img src="./PredFormer_files/framework.png" class="teaser-gif" style="width:60%;"><br>
+  <h3 style="text-align:center">Main categories of video prediction framework. (a) Recurrent-based Framework (b) CNN Encoder-Decoder-based Recurrent-free Framework. (c) Pure transformer-based Recurrent-free Framework.</em></h3>
+    <font size="+2">
+          <p style="text-align: center;">
+            <a href="https://arxiv.org/abs/2410.04733" target="_blank">[Arxiv]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+	          <a href="https://github.com/yyyujintang/PredFormer" target="_blank">[Code]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="./PredFormer_files/bibtex.txt" target="_blank">[BibTeX]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+          </p>
+    </font>
+</div>
+<div class="content">
+  <h2 style="text-align:center;">Abstract</h2>
+  <p>Video prediction has witnessed the emergence of RNN-based models led by ConvLSTM, and CNN-based models led by SimVP. Following the significant success of ViT, recent works have integrated ViT into both RNN and CNN frameworks, achieving improved performance. While we appreciate these prior approaches, we raise a fundamental question: Is there a simpler yet more effective solution that can eliminate the high computational cost of RNNs while addressing the limited receptive fields and poor generalization of CNNs? How far can it go with a simple pure transformer model for video prediction? In this paper, we propose PredFormer, a framework entirely based on Gated Transformers. We provide a comprehensive analysis of 3D Attention in the context of video prediction. Extensive experiments demonstrate that PredFormer delivers state-of-the-art performance across four standard benchmarks. The significant improvements in both accuracy and efficiency highlight the potential of PredFormer as a strong baseline for real-world video prediction applications. The source code and trained models will be released to the public.</p>
+</div>
+<div class="content">
+  <h2>Background</h2>
+  <p> Video Prediction, also named as Spatio-Temporal predictive learning involves learning spatial and temporal patterns by predicting future frames based on past observations. This capability is essential for various applications, including weather forecasting, traffic flow prediction, precipitation nowcasting and human motion forecasting. Despite the success of various video prediction methods, they often struggle to balance computational cost and performance. On the one hand, high-powered recurrent-based methods rely heavily on autoregressive RNN frameworks, which face significant limitations in parallelization and computational efficiency. On the other hand, efficient recurrent-free methods, such as those based on the SimVP framework, use CNNs in an encoder-decoder architecture but are constrained by local receptive fields, limiting their scalability and generalization.  The ensuing question is <strong><em>Can we develop a framework that autonomously learns spatiotemporal dependencies without relying on inductive bias?</em></strong> </p>
+</div>
+<div class="content">
+  <h2>Method</h2>
+  <p> To systematically analyze the transformer structure of the network model in spatial-temporal predictive learning, we propose the PredFormer as a general model design. Follow the ViT design, PredFormer splits a sequence of frames into a sequence of equally sized, non-overlapping patches, each of which is flattened into a 1D tokens. These tokens are then linearly projected into hidden dimensions and processed by a layer normalization layer. Unlike typical ViT approach, which employs learnable position embeddings, we incorporate a spatiotemporal position encoding (PE) generated by sinusoidal functions with absolute coordinates for each patch. The 1D tokens are then processed by a PredFormer Encoder for feature extraction. PredFormer Encoder is stacked by Gated Transformer Blocks in various manners. Since our encoder is based on a pure gated transformer, without convolution or resolution reduction, global context is modeled at every layer. This allows it to be paired with a simple decoder, forming a powerful prediction model. After the encoder, a linear layer serves as the decoder, projecting the hidden dimensions back to recover the 1D tokens to 2D patches.</p>
+  <br>
+  <img class="summary-img" src="./PredFormer_files/PredFormer.png" style="width:80%;"> <br>
+  <p>Modeling spatiotemporal dependencies in video prediction is challenging, as the balance between spatial and temporal information differs significantly across tasks and datasets. Developing flexible and adaptive models that can accommodate varying dependencies and scales is thus critical. To address these, we explore both full-attention encoders and factorized encoders with spatial-first (Fac-S-T) and temporal-first (Fac-T-S) configurations. In addition, we introduce six interleaved models based on PredFormer layer, enabling dynamic interaction across multiple scales. A PredFormer layer is a module capable of simultaneously processing spatial and temporal information. Building on this design principle, we propose three interleaved spatiotemporal paradigms, Binary, Triplet, and Quadrupled, which sequentially model the relation from spatial and temporal views. Ultimately, they yield six distinct architectural configurations. </p>
+  <br>
+  <img class="summary-img" src="./PredFormer_files/Factorization.png" style="width:80%;"> <br>
+</div>
+<div class="content">
+  <h2>Results on Moving MNIST and Human3.6m</h2>
+  <p> </p>
+<img class="summary-img" src="./PredFormer_files/mm_hm.png" style="width:100%;">
+</div>
+<div class="content">
+  <h2>Results on TaxiBJ and WeatherBench</h2>
+  <p></p>
+  <br>
+  <img class="summary-img" src="./PredFormer_files/tx_weather.png" style="width:100%;"> <br>
+</div>
+<div class="content">
+  <h2>Ablation Study</h2>
+  <p>We conduct an ablation study on the number of PredFormer layers, the Gate Linear Unit choice, and the design of Position Encoding.</p>
+  <br>
+  <img class="summary-img" src="./PredFormer_files/ablation.png" style="width:100%;"> <br>
+</div>
+<div class="content">
+  <h2>Visualization</h2>
+  <p>We provide a visual comparison of PredFormer's prediction results and prediction errors with Ground Truth. For Moving MNIST, our model accurately captures digit trajectories, with significantly lower accumulated error compared to TAU. On TaxiBJ, PredFormer effectively reconstructs the intricate spatial structures of traffic patterns, reducing high-frequency noise present in TAU’s predictions. On WeatherBench, PredFormer achieves sharper and more precise temperature forecasts, with error heatmaps showing lower deviations in critical regions. Lastly, for Human3.6m, PredFormer consistently preserves fine-grained motion details, demonstrating superior temporal coherence in video prediction. Additional visualizations are provided in the supplementary material.</p>
+  <br>
+  <img class="summary-img" src="./PredFormer_files/vis.png" style="width:100%;"> <br>
+</div>
+<div class="content">
+  <h2>Conclusion</h2>
+  <p>In this paper, we introduce PredFormer, a pure transformer-based framework designed for video prediction. Our in-depth analysis extends the understanding of spatial-temporal transformer factorization, moving beyond existing video ViT frameworks. Through rigorous experiments across diverse benchmarks, PredFormer shows unparalleled performance and efficiency, surpassing previous models by a large margin. Our results show that: (1) Interleaved spatiotemporal transformer architectures establish new benchmarks, excelling across multiple datasets. (2) Factorized temporal-first encoders significantly outperform both full spatial-temporal attention encoders and Factorized spatial-first configurations. (3) Implementing dropout and uniform stochastic depth concurrently leads to superior performance enhancements on overfitting datasets. (4) Absolute position encoding consistently outperforms learnable alternatives across all benchmarks. In summary, PredFormer not only establishes a strong baseline for real-world applications but also provides a new paradigm for video prediction with recurrent-free and convolution-free design.</p>
+  <br>
+</div>
+<div class="content">
+  <h2>BibTex</h2>
+  <code> @inproceedings{tang2024predformer,<br>
+  &nbsp;&nbsp;title={Video Prediction Transformers without Recurrence or Convolution},<br>
+  &nbsp;&nbsp;author={Yujin Tang and Lu Qi and Fei Xie and Xiangtai Li and Chao Ma and Ming-Hsuan Yang},<br>
+  &nbsp;&nbsp;booktitle={Arxiv},<br>
+  &nbsp;&nbsp;year={2024}<br>
+  } </code> 
+</div>
+<div class="content">
+  <strong>Acknowledgements</strong>: We borrow this template from <a href="https://dreambooth.github.io/" target="_blank">DreamBooth</a>. PredFormer code is based on <a href="https://github.com/chengtan9907/OpenSTL" target="_blank">OpenSTL</a>. We sincerely thank Cheng Tan for his help in improving this work.
+
+</div>
+</body>
+</html>
+
